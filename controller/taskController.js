@@ -11,13 +11,17 @@ class TaskController{
             if (!user) return res.status(404).json({ msg: "User not found" });
             const project=user.projects.id(projectID);
             if(!project) return res.status(404).json({msg:"Projects not found"});
+            const validStatuses = ['to-do', 'in-progress', 'done', 'overdue'];
+            if(!validStatuses.includes(status)) {
+                return res.status(400).json({ msg: 'Invalid status. Must be one of: pending, in-progress, completed, overdue' });
+            }
             const newTask={
                 title,
                 description,
                 assignTo,
                 startDate,
                 endDate,
-                status:status || 'pending' 
+                status:status || 'to-do' 
             }
 
             project.tasks.push(newTask);
@@ -25,6 +29,7 @@ class TaskController{
             res.status(201).json(newTask);
         }catch (err){
             res.status(500).json({ msg: "Error creating project", err });
+            console.log(err)
         }
     }
 
@@ -46,9 +51,9 @@ class TaskController{
         
         if(!status) return res.status(400).json({ msg: 'Status is required' });
 
-        const validStatuses = ['pending', 'in-progress', 'completed', 'overdue'];
+        const validStatuses = ['to-do', 'in-progress', 'done', 'overdue'];
         if(!validStatuses.includes(status)) {
-            return res.status(400).json({ msg: 'Invalid status. Must be one of: pending, in-progress, completed, overdue' });
+            return res.status(400).json({ msg: 'Invalid status. Must be one of: to-do, in-progress, to-do, overdue' });
         }
 
         try{
@@ -113,7 +118,7 @@ class TaskController{
         const {userID,projectID,taskID}=req.params;
         const {assignTo}=req.body;
         
-        if(!assignTo) return res.status(400).json({ msg: 'AssignTo user ID is required' });
+        //if(!assignTo) return res.status(400).json({ msg: 'AssignTo user ID is required' });
         
         try{
             const user=await User.findById(userID);
@@ -121,12 +126,7 @@ class TaskController{
             const project=user.projects.id(projectID);
             if(!project) return res.status(404).json({msg:"Projects not found"});
             const task=project.tasks.id(taskID);
-            if(!task) return res.status(404).json({msg:"Task not found"});
-            
-            
-            const assignedUser = await User.findById(assignTo);
-            if (!assignedUser) return res.status(404).json({ msg: "Assigned user not found" });
-            
+            if(!task) return res.status(404).json({msg:"Task not found"}); 
             task.assignTo=assignTo;
             await user.save();
             res.status(200).json({ msg: "Task assignment updated successfully", task });           
