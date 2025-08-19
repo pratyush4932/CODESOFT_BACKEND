@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import User from "../model/UserSchema.js";
 import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
+import path from "path";
 import dotenv from "dotenv"
 dotenv.config();
 /*
@@ -54,7 +55,34 @@ class AuthController {
             from: process.env.EMAIL_ADMIN,
             to: email,
             subject: "Verify Your Email",
-            html: `<p>Click <a href="${verify_url}">here</a> to verify your email.</p>`,
+            html: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #333; text-align: center;">Email Verification</h2>
+          <p style="color: #666; font-size: 16px; line-height: 1.6;">
+            Thank you for signing up! Please click the button below to verify your email address.
+          </p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${verify_url}" 
+               style="display: inline-block; 
+                      background-color: #007bff; 
+                      color: white; 
+                      padding: 12px 30px; 
+                      text-decoration: none; 
+                      border-radius: 5px; 
+                      font-weight: bold; 
+                      font-size: 16px;
+                      box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+              Verify Email Address
+            </a>
+          </div>
+          <p style="color: #999; font-size: 14px; text-align: center;">
+            If the button doesn't work, you can copy and paste this link into your browser:<br>
+            <a href="${verify_url}" style="color: #007bff;">${verify_url}</a>
+          </p>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+          <p style="color: #999; font-size: 12px; text-align: center;">
+            This email was sent automatically. Please do not reply to this email.
+          </p>
+        </div>`,
           });
           
           console.log('Email sent successfully');
@@ -95,7 +123,8 @@ class AuthController {
       if (!user) return res.status(404).json({ msg: "User not found" });
       user.verified = true;
       await user.save();
-      res.status(200).json({ msg: "Email verified Successfully" });
+      const filePath = path.join(process.cwd(), "public", "email-verified.html");
+      return res.sendFile(filePath);
     } catch (err) {
       console.error('Verify email error:', err);
       res.status(500).json({ msg: "Oops something went wrong", error: err.message });

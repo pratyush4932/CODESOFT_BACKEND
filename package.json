@@ -21,6 +21,7 @@
     "mongoose": "^8.17.0",
     "node-fetch": "^3.3.2",
     "nodemailer": "^7.0.5",
+    "path": "^0.12.7",
     "supervisor": "^0.12.0"
   }
 }

@@ -45,6 +45,17 @@ app.use((err, req, res, next) => {
 
 app.use(express.json());
 
+// Runtime config for front-end: exposes CLIENT_URL without bundling
+app.get("/config.js", (req, res) => {
+  const clientUrl = process.env.CLIENT_URL || "http://localhost:3000";
+  res.type("application/javascript").send(
+    `window.CLIENT_URL = ${JSON.stringify(clientUrl)};\n`
+  );
+});
+
+// Serve static files (e.g., email-verified.html) from the public/ directory
+app.use(express.static("public"));
+
 app.get("/test", (req, res) => {
   res.json({ message: "Server is working!" });
 });
